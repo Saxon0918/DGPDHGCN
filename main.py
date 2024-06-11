@@ -4,7 +4,7 @@ import gc
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 from torch import nn, optim
 from model import Model
-from trainData import Dataset
+from dataprocess import Dataset
 from sklearn.metrics import roc_auc_score
 from sklearn.metrics import precision_score
 from sklearn import metrics
@@ -77,18 +77,18 @@ def train(model, train_data, optimizer, opt, f):
 if __name__ == "__main__":
     opt = Config()
     # --------------------读取文件----------------------
-    Disease = np.genfromtxt('data/original/mat_disease_disease.csv', delimiter=',')  # dim=[394,394]
-    Drug = np.genfromtxt('data/original/mat_drug_drug.csv', delimiter=',')  # dim=[542,542]
-    DD = np.genfromtxt('data/original/mat_disease_drug.csv', delimiter=',')
+    Disease = np.genfromtxt('data/mat_disease_disease.csv', delimiter=',')  # dim=[394,394]
+    Drug = np.genfromtxt('data/mat_drug_drug.csv', delimiter=',')  # dim=[542,542]
+    DD = np.genfromtxt('data/mat_disease_drug.csv', delimiter=',')
     DD = DD.T  # dim=[542,394]
 
-    gg = np.genfromtxt('data/original/mat_gene_gene.csv', delimiter=',')  # dim=[11153, 11153]
-    diseaseg = np.genfromtxt('data/original/mat_disease_gene.csv', delimiter=',')  # dim=[394,11153]
-    drugg = np.genfromtxt('data/original/mat_drug_gene.csv', delimiter=',')  # dim=[542,11153]
+    gg = np.genfromtxt('data/mat_gene_gene.csv', delimiter=',')  # dim=[11153, 11153]
+    diseaseg = np.genfromtxt('data/mat_disease_gene.csv', delimiter=',')  # dim=[394,11153]
+    drugg = np.genfromtxt('data/mat_drug_gene.csv', delimiter=',')  # dim=[542,11153]
 
-    pp = np.genfromtxt('data/original/mat_protein_protein.csv', delimiter=',')  # dim=[1512, 1512]
-    diseasep = np.genfromtxt('data/original/mat_disease_protein.csv', delimiter=',')  # dim=[394,1512]
-    drugp = np.genfromtxt('data/original/mat_drug_protein.csv', delimiter=',')  # dim=[542,1512]
+    pp = np.genfromtxt('data/mat_protein_protein.csv', delimiter=',')  # dim=[1512, 1512]
+    diseasep = np.genfromtxt('data/mat_disease_protein.csv', delimiter=',')  # dim=[394,1512]
+    drugp = np.genfromtxt('data/mat_drug_protein.csv', delimiter=',')  # dim=[542,1512]
 
     # --------------------交叉验证配置----------------------
     [row, col] = np.shape(DD)  # row=542, col=394
