@@ -5,6 +5,7 @@ from torch_geometric.nn import conv
 from torch_geometric.nn import dense, norm
 import copy
 
+
 class Model(nn.Module):
     def __init__(self, sizes):
         super(Model, self).__init__()
@@ -59,7 +60,6 @@ class Model(nn.Module):
 
     def forward(self, input):
         t.manual_seed(2)
-        # disease, drug, protein, gene
         di_dim = input[0]['data'].size(0)  # dim=394
         dr_dim = input[1]['data'].size(0)  # dim=542
         p_dim = input[2]['data'].size(0)  # dim=1512
@@ -69,8 +69,8 @@ class Model(nn.Module):
         drdi_edge = t.cat((input[8]['edge_index'][1, :].reshape(1, -1), input[8]['edge_index'][0, :].reshape(1, -1)))
 
         # --------------------similarity GCN----------------------
-        di1 = t.relu(self.gcn_didi(input[0]['data'].cuda(), input[0]['edge_index'].cuda()))  # 构建disease sim图 input=[394,394],output=[394,256]
-        dr1 = t.relu(self.gcn_drdr(input[1]['data'].cuda(), input[1]['edge_index'].cuda()))  # 构建drug sim图 input=[542,542],output=[542,256]
+        di1 = t.relu(self.gcn_didi(input[0]['data'].cuda(), input[0]['edge_index'].cuda()))  # dim=[394,256]
+        dr1 = t.relu(self.gcn_drdr(input[1]['data'].cuda(), input[1]['edge_index'].cuda()))  # dim=[542,256]
 
         # --------------------FC layer----------------------
         di2 = t.relu(self.linear_di(input[0]['data'].cuda()))  # dim=[394,256]
@@ -79,40 +79,40 @@ class Model(nn.Module):
         g1 = t.relu(self.linear_g(input[9]['data'].cuda()))  # dim=[11153,256]
 
         # --------------------disease-drug GCN----------------------
-        didr_drdi_edge = t.cat((didr_edge, drdi_edge), 1)  # dim=[2,12312]
-        didr_drdi = t.cat((di2, dr2))  # dim=[936,256]
-        didr_drdi_gcn = t.relu(self.gcn_drdi(didr_drdi.cuda(), didr_drdi_edge.cuda()))  # 构造disease-drug图,input=[936,256],output=[936,256]
-        di3, dr3 = t.split(didr_drdi_gcn.cuda(), (di_dim, dr_dim))  # 分开,分别是[394,256]和[542,256]
+        didr_drdi_edge = t.cat((didr_edge, drdi_edge), 1)
+        didr_drdi = t.cat((di2, dr2))
+        didr_drdi_gcn = t.relu(self.gcn_drdi(didr_drdi.cuda(), didr_drdi_edge.cuda()))
+        di3, dr3 = t.split(didr_drdi_gcn.cuda(), (di_dim, dr_dim))  # dim_di3=[394,256], dim_dr3=[542,256]
 
         # --------------------disease-protein-drug GCN----------------------
         dip_gcn_edge = input[3]['dip_edge_gcn']
         pdi_gcn_edge = t.cat((input[3]['dip_edge_gcn'][1, :].reshape(1, -1), input[3]['dip_edge_gcn'][0, :].reshape(1, -1)))
         dip_pdi_edge = t.cat((dip_gcn_edge, pdi_gcn_edge), 1)
         dip_pdi = t.cat((di2, p1))
-        dip_pdi_gcn = t.relu(self.gcn_dip(dip_pdi.cuda(), dip_pdi_edge.cuda()))   # 构造disease-protein图,input=[1906,256],output=[1906,256]
-        di5, p3 = t.split(dip_pdi_gcn.cuda(), (di_dim, p_dim))  # 分开,分别是[394,256]和[1512,256]
+        dip_pdi_gcn = t.relu(self.gcn_dip(dip_pdi.cuda(), dip_pdi_edge.cuda()))
+        di5, p3 = t.split(dip_pdi_gcn.cuda(), (di_dim, p_dim))  # dim_di5=[394,256], dim_p3=[1512,256]
 
         drp_gcn_edge = input[4]['drp_edge_gcn']
         pdr_gcn_edge = t.cat((input[4]['drp_edge_gcn'][1, :].reshape(1, -1), input[4]['drp_edge_gcn'][0, :].reshape(1, -1)))
         drp_pdr_edge = t.cat((drp_gcn_edge, pdr_gcn_edge), 1)
         drp_pdr = t.cat((dr2, p1))
-        drp_pdr_gcn = t.relu(self.gcn_drp(drp_pdr.cuda(), drp_pdr_edge.cuda()))   # 构造drug-gene图,input=[1906,256],output=[1906,256]
-        dr5, p2 = t.split(drp_pdr_gcn.cuda(), (dr_dim, p_dim))  # 分开,分别是[542,256]和[1512,256]
+        drp_pdr_gcn = t.relu(self.gcn_drp(drp_pdr.cuda(), drp_pdr_edge.cuda()))
+        dr5, p2 = t.split(drp_pdr_gcn.cuda(), (dr_dim, p_dim))  # dim_dr5=[542,256], dim_p2=[1512,256]
 
         # --------------------disease-gene-drug GCN----------------------
         dig_gcn_edge = input[10]['dig_edge_gcn']
         gdi_gcn_edge = t.cat((input[10]['dig_edge_gcn'][1, :].reshape(1, -1), input[10]['dig_edge_gcn'][0, :].reshape(1, -1)))
         dig_gdi_edge = t.cat((dig_gcn_edge, gdi_gcn_edge), 1)
         dig_gdi = t.cat((di2, g1))
-        dig_gdi_gcn = t.relu(self.gcn_dig(dig_gdi.cuda(), dig_gdi_edge.cuda()))  # 构造disease-gene图,input=[11547,256],output=[11547,256]
-        di4, g3 = t.split(dig_gdi_gcn.cuda(), (di_dim, g_dim))  # 分开,分别是[394,256]和[11153,256]
+        dig_gdi_gcn = t.relu(self.gcn_dig(dig_gdi.cuda(), dig_gdi_edge.cuda()))
+        di4, g3 = t.split(dig_gdi_gcn.cuda(), (di_dim, g_dim))  # dim_di4=[394,256], dim_g3=[11153,256]
 
         drg_gcn_edge = input[11]['drg_edge_gcn']
         gdr_gcn_edge = t.cat((input[11]['drg_edge_gcn'][1, :].reshape(1, -1), input[11]['drg_edge_gcn'][0, :].reshape(1, -1)))
         drg_gdr_edge = t.cat((drg_gcn_edge, gdr_gcn_edge), 1)
         drg_gdr = t.cat((dr2, g1))
-        drg_gdr_gcn = t.relu(self.gcn_drg(drg_gdr.cuda(), drg_gdr_edge.cuda()))  # 构造drug-gene图,input=[11695,256],output=[11695,256]
-        dr4, g2 = t.split(drg_gdr_gcn.cuda(), (dr_dim, g_dim))  # 分开,分别是[542,256]和[11153,256]
+        drg_gdr_gcn = t.relu(self.gcn_drg(drg_gdr.cuda(), drg_gdr_edge.cuda()))
+        dr4, g2 = t.split(drg_gdr_gcn.cuda(), (dr_dim, g_dim))  # dim_dr4=[542,256], dim_g2=[11153,256]
 
         # --------------------disease-protein-gene-drug RGCN----------------------
         di1di3_mp = input[12]['di1di3_edge_rgcn']
@@ -167,18 +167,18 @@ class Model(nn.Module):
                              1)
         rgcn_edge_type = t.reshape(rgcn_edge_type, [-1, ])
 
-        rgcn_didrpg = t.cat((di2, di1, di3, dr2, dr1, dr3, p3, p2, g3, g2))  # 总共10种edge type
-        rgcn_final_didrpg = t.relu(self.rgcn_didrpg(rgcn_didrpg.cuda(), rgcn_edge_index.cuda(), rgcn_edge_type.cuda()))  # 构建disease,drug,protein,gene的异构网络，传入18种边的关系
+        rgcn_didrpg = t.cat((di2, di1, di3, dr2, dr1, dr3, p3, p2, g3, g2))
+        rgcn_final_didrpg = t.relu(self.rgcn_didrpg(rgcn_didrpg.cuda(), rgcn_edge_index.cuda(), rgcn_edge_type.cuda()))
         di1_rgcn, di2_rgcn, di3_rgcn, dr1_rgcn, dr2_rgcn, dr3_rgcn, p3_rgcn, p2_rgcn, g3_rgcn, g2_rgcn = t.split(
             rgcn_final_didrpg.cuda(), (di_dim, di_dim, di_dim, dr_dim, dr_dim, dr_dim, p_dim, p_dim, g_dim, g_dim))
 
         # --------------------output layer----------------------
         tmp_didi = t.add(di1_rgcn, di2_rgcn)
-        di_di = t.add(tmp_didi, di3_rgcn)  # 获取disease的全部编码 dim=[394,256]
+        di_di = t.add(tmp_didi, di3_rgcn)  # dim=[394,256]
         tmp_drdr = t.add(dr1_rgcn, dr2_rgcn)
-        dr_dr = t.add(tmp_drdr, dr3_rgcn)  # 获取drug的全部编码 dim=[542,256]
-        p_p = t.add(p3_rgcn, p2_rgcn)  # 获取protein的全部编码 dim=[1512,256]
-        g_g = t.add(g3_rgcn, g2_rgcn)  # 获取gene的全部编码 dim=[11153,256]
+        dr_dr = t.add(tmp_drdr, dr3_rgcn)  # dim=[542,256]
+        p_p = t.add(p3_rgcn, p2_rgcn)  # dim=[1512,256]
+        g_g = t.add(g3_rgcn, g2_rgcn)  # dim=[11153,256]
 
         mlp_di1 = t.relu(self.linear_mlp_di1(di_di))
         mlp_di2 = t.relu(self.linear_mlp_di2(mlp_di1))
@@ -197,11 +197,11 @@ class Model(nn.Module):
         mlp_g3 = t.relu(self.linear_mlp_g3(mlp_g2))  # dim=[11153,64]
 
         # --------------------calculate similarity----------------------
-        drdi = mlp_dr3.mm(mlp_di3.t())  # dim=[542,394] drug和disease的关系
-        pdi = mlp_p3.mm(mlp_di3.t())  # dim=[1512,394] protein和disease的关系
-        pdr = mlp_p3.mm(mlp_dr3.t())  # dim=[1512,542] protein和drug的关系
-        gdi = mlp_g3.mm(mlp_di3.t())  # dim=[11153,394] gene和disease的关系
-        gdr = mlp_g3.mm(mlp_dr3.t())  # dim=[11153,542] gene和drug的关系
+        drdi = mlp_dr3.mm(mlp_di3.t())  # dim=[542,394]
+        pdi = mlp_p3.mm(mlp_di3.t())  # dim=[1512,394]
+        pdr = mlp_p3.mm(mlp_dr3.t())  # dim=[1512,542]
+        gdi = mlp_g3.mm(mlp_di3.t())  # dim=[11153,394]
+        gdr = mlp_g3.mm(mlp_dr3.t())  # dim=[11153,542]
 
         return drdi, pdi, pdr, gdi, gdr
 
