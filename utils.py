@@ -245,7 +245,7 @@ def process_data(opt, DD_train, ddrug, ddisease, pp, dip, drp, gg, dig, drg, zer
 
     # --------------------disease-protein-drug----------------------
     pp_matrix = t.FloatTensor(pp)
-    pp_edge_index = get_edge_index(pp_matrix, 0, 0)  # pp是8284
+    pp_edge_index = get_edge_index(pp_matrix, 0, 0)
     dataset['pp'] = {'data': pp_matrix, 'edge_index': pp_edge_index}
 
     pdi_matrix = t.FloatTensor(dip.T)
@@ -260,7 +260,7 @@ def process_data(opt, DD_train, ddrug, ddisease, pp, dip, drp, gg, dig, drg, zer
 
     # --------------------disease-gene-drug----------------------
     gg_matrix = t.FloatTensor(gg)
-    gg_edge_index = get_edge_index(gg_matrix, 0, 0)  # gg是1023439条
+    gg_edge_index = get_edge_index(gg_matrix, 0, 0)
     dataset['gg'] = {'data': gg_matrix, 'edge_index': gg_edge_index}
 
     gdi_matrix = t.FloatTensor(dig.T)
