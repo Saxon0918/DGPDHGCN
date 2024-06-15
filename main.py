@@ -67,6 +67,10 @@ def train(model, train_data, optimizer, opt):
 
     for epoch in range(1, opt.epoch + 1):
         train_reg_loss, predict = train_epoch()
+        if epoch % 100 == 0:
+            print("epoch {}, training loss {}".format(epoch, train_reg_loss.float()))
+        elif epoch == 1:
+            print("epoch {}, training loss {}".format(epoch, train_reg_loss.float()))
     return predict
 
 
