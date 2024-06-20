@@ -163,8 +163,6 @@ if __name__ == "__main__":
 
             # --------------------model testing----------------------
             predict = predict.data.cpu().numpy()
-            # pred_tocsv = pd.DataFrame(predict)
-            # pred_tocsv.to_csv('data/case_study.csv', index=False)
             test_predict = create_resultlist(predict, testset, Index_PositiveRow, Index_PositiveCol, Index_zeroRow,
                                              Index_zeroCol, len(test_p), zero_length, test_f)
             label = true_list
