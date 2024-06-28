@@ -1,6 +1,6 @@
 **Data Files**
 
-This repository contains several CSV files that list names and interactions of diseases, drugs,genes, and proteins used in our research. Below is a description of each file:
+This repository contains several CSV files that list names and interactions of diseases, drugs, genes, and proteins used in our research. Below is a description of each file:
 
 -  disease.csv: Disease name
 -  disease_disease.csv: Disease interaction
