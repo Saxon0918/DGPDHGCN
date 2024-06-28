@@ -8,7 +8,7 @@ This repository contains several CSV files that list names and interactions of d
 -  drug.csv: Drug name
 -  drug_drug.csv: Drug interaction
 -  drug_gene.csv: Drug-gene reaction
--  gene.csv: Gene names
+-  gene.csv: Gene name
 -  gene_gene.csv: Gene-gene reaction
 -  mat_disease_disease.csv: Adjacency matrix of disease-disease similarity
 -  mat_disease_drug.csv: Adjacency matrix of disease-drug association
@@ -17,7 +17,7 @@ This repository contains several CSV files that list names and interactions of d
 -  mat_drug_drug.csv: Adjacency matrix of drug-drug similarity
 -  mat_drug_gene.csv: Adjacency matrix of drug-gene association
 -  mat_drug_protein.csv: Adjacency matrix of drug-protein association
--  mat_gene_gene.csv: Adjacency matrix of gene-gene interactions
+-  mat_gene_gene.csv: Adjacency matrix of gene-gene interaction
 -  mat_protein_protein.csv: Adjacency matrix of protein-protein interaction
 
 
